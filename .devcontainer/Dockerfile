@@ -97,3 +97,6 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && \
     node -v
 
 RUN npm install -g @anthropic-ai/claude-code
+
+# pnpm インストール
+RUN npm install -g pnpm
