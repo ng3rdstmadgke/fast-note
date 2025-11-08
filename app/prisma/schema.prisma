@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+// https://www.prisma.io/docs/orm/prisma-schema/data-model/models
+
+// generator: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#generator
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+// datasource: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#datasource
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// @id: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#id
+// @map: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#map
+// @relation: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#relation
+// @@map: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#map-1
+// @@index: https://www.prisma.io/docs/orm/reference/prisma-schema-reference#index
+
+
+// ユーザーテーブル（Keycloakから取得した情報をキャッシュ）
+model User {
+  id             String   @id @db.VarChar(255)
+  email          String   @unique @db.VarChar(255)
+  name           String   @db.VarChar(100)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  lastLoginAt    DateTime @default(now()) @map("last_login_at") @db.Timestamptz()
+
+  // リレーション
+  notes Note[]
+  tags  Tag[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// メモテーブル
+model Note {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.VarChar(255)
+  title     String   @db.VarChar(255)
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // リレーション
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteTags NoteTag[]
+
+  @@index([userId])
+  @@index([title])
+  @@index([createdAt(sort: Desc)])
+  @@map("notes")
+}
+
+// タグテーブル（ユーザーごとに管理）
+model Tag {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.VarChar(255)
+  name      String   @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  // リレーション
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteTags NoteTag[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([name])
+  @@map("tags")
+}
+
+// メモとタグの中間テーブル
+model NoteTag {
+  noteId    String   @map("note_id") @db.Uuid
+  tagId     String   @map("tag_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  // リレーション
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+  @@index([tagId])
+  @@map("note_tags")
+}

@@ -57,3 +57,48 @@ https://ui.shadcn.com/docs/components-json
   - `iconLibrary`: 使用するアイコンライブラリ（"lucide"）
   - `aliases`: パスエイリアスの定義（@/components, @/libなど）
   - `registries`: カスタムコンポーネントレジストリの設定
+
+# DBマイグレーション
+
+
+```bash
+# Prisma & Client
+pnpm add -D prisma
+pnpm add @prisma/client
+
+# 初期化（datasource を postgresql に）
+npx prisma init --datasource-provider postgresql
+```
+
+モデルの実装
+
+`app/prisma/schema.prisma` を編集してモデルを定義します。
+
+環境変数にDATABASE_URLを設定します。
+
+`app/.env` ファイルに以下を追加します。
+
+
+```bash
+DATABASE_URL="postgresql://app:root1234@fast-memo-sample-postgresql:5432/sample?schema=public"
+```
+
+`app/prisma.config.ts` を編集して環境変数を読み込みます。
+
+```typescript
+import "dotenv/config";
+import { defineConfig, env } from "prisma/config";
+
+// ...
+```
+
+マイグレーションの実行
+
+```bash
+# マイグレーションファイルの作成
+#   --name: マイグレーション名
+npx prisma migrate dev --name init --create-only
+
+# マイグレーションの適用
+npx prisma migrate deploy
+```
