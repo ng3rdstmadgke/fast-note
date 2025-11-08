@@ -65,6 +65,7 @@ https://ui.shadcn.com/docs/components-json
 # Prisma & Client
 pnpm add -D prisma
 pnpm add @prisma/client
+npm add -D dotenv
 
 # 初期化（datasource を postgresql に）
 npx prisma init --datasource-provider postgresql
