@@ -94,6 +94,7 @@ ENV UV_PROJECT_ENVIRONMENT="/workspaces/fast-memo/.venv"
 # https://nodesource.com/products/distributions
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && \
     apt-get install -y nodejs && \
+    npm install -g npm && \
     node -v
 
 RUN npm install -g @anthropic-ai/claude-code

@@ -35,3 +35,25 @@ export default function Home() {
   );
 }
 ```
+
+
+### shadcn/ui の設定ファイル `components.json` 
+
+https://ui.shadcn.com/docs/components-json
+
+
+- 主な設定項目
+  - `$schema`: スキーマ定義のURL（shadcn/ui公式のスキーマ）
+  - `style`: コンポーネントのスタイルバリアント（"new-york" または "default"）
+  - `rsc`: React Server Components を使用するかどうか
+  - `tsx`: TypeScript を使用するかどうか
+- Tailwind CSS 設定
+  - `config`: Tailwind設定ファイルのパス
+  - `css`: グローバルCSSファイルのパス
+  - `baseColor`: ベースカラー（"neutral"）
+  - `cssVariables`: CSS変数を使用するかどうか
+  - `prefix`: クラス名のプレフィックス
+- その他
+  - `iconLibrary`: 使用するアイコンライブラリ（"lucide"）
+  - `aliases`: パスエイリアスの定義（@/components, @/libなど）
+  - `registries`: カスタムコンポーネントレジストリの設定
