@@ -1,8 +1,8 @@
-# fast-memo
+# fast-note
 
 ## プロジェクト概要
 
-**fast-memo** は、ローカルのメモ帳で作業記録を取っている作業を代替するために開発されたWebアプリケーションです。シンプルで高速なメモ管理を実現し、日々の作業記録を効率的に管理することを目的としています。
+**fast-note** は、ローカルのメモ帳で作業記録を取っている作業を代替するために開発されたWebアプリケーションです。シンプルで高速なメモ管理を実現し、日々の作業記録を効率的に管理することを目的としています。
 
 - **プロジェクトタイプ**: 個人プロジェクト
 - **開発段階**: 初期段階（UI設計・プロトタイプフェーズ）
@@ -305,7 +305,7 @@ CREATE INDEX idx_memo_tags_tag_id ON memo_tags(tag_id);
 ## ディレクトリ構造
 
 ```
-/workspaces/fast-memo/
+/workspaces/fast-note/
 ├── app/                          # Next.js アプリケーション
 │   ├── app/                      # App Router
 │   │   ├── layout.tsx            # ルートレイアウト
@@ -390,7 +390,7 @@ CREATE INDEX idx_memo_tags_tag_id ON memo_tags(tag_id);
 
 ```bash
 git clone <repository-url>
-cd fast-memo
+cd fast-note
 ```
 
 2. **依存関係のインストール**
@@ -403,7 +403,7 @@ pnpm install
 3. **PostgreSQL の起動**
 
 ```bash
-cd /workspaces/fast-memo
+cd /workspaces/fast-note
 ./bin/postgresql.sh
 ```
 
@@ -433,8 +433,8 @@ Keycloak 管理画面:
 - パスワード: admin
 
 **初回セットアップ**: Keycloak管理画面で以下を設定
-1. Realmを作成: `fast-memo`
-2. Clientを作成: `fast-memo-web`（confidential, OIDC）
+1. Realmを作成: `fast-note`
+2. Clientを作成: `fast-note-web`（confidential, OIDC）
 3. Valid Redirect URIs: `http://localhost:3000/api/auth/callback/keycloak`
 4. Client Secretを取得してメモ
 
@@ -452,9 +452,9 @@ NEXTAUTH_SECRET="your-secret-key-here-generate-with-openssl-rand-base64-32"
 AUTH_TRUST_HOST="true"
 
 # Keycloak
-KEYCLOAK_CLIENT_ID="fast-memo-web"
+KEYCLOAK_CLIENT_ID="fast-note-web"
 KEYCLOAK_CLIENT_SECRET="your-client-secret-from-keycloak"
-KEYCLOAK_ISSUER="http://localhost:8080/realms/fast-memo"
+KEYCLOAK_ISSUER="http://localhost:8080/realms/fast-note"
 ```
 
 シークレットキーの生成:
@@ -618,8 +618,8 @@ Closes #123
 1. **Docker イメージのビルド**
 
 ```bash
-cd /workspaces/fast-memo
-docker build -f docker/app/Dockerfile -t fast-memo:latest ./app
+cd /workspaces/fast-note
+docker build -f docker/app/Dockerfile -t fast-note:latest ./app
 ```
 
 2. **ECR へのプッシュ**
@@ -630,17 +630,17 @@ aws ecr get-login-password --region ap-northeast-1 | \
   docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com
 
 # タグ付け
-docker tag fast-memo:latest <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/fast-memo:latest
+docker tag fast-note:latest <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/fast-note:latest
 
 # プッシュ
-docker push <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/fast-memo:latest
+docker push <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/fast-note:latest
 ```
 
 3. **kubectl によるデプロイ**
 
 ```bash
 # EKS クラスタへの接続設定
-aws eks update-kubeconfig --region ap-northeast-1 --name fast-memo-cluster
+aws eks update-kubeconfig --region ap-northeast-1 --name fast-note-cluster
 
 # Kubernetes リソースのデプロイ
 kubectl apply -f k8s/
@@ -700,18 +700,18 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
       - name: Build and push Docker image
         run: |
-          docker build -f docker/app/Dockerfile -t fast-memo:${{ github.sha }} ./app
-          docker tag fast-memo:${{ github.sha }} $ECR_REGISTRY/fast-memo:${{ github.sha }}
-          docker tag fast-memo:${{ github.sha }} $ECR_REGISTRY/fast-memo:latest
-          docker push $ECR_REGISTRY/fast-memo:${{ github.sha }}
-          docker push $ECR_REGISTRY/fast-memo:latest
+          docker build -f docker/app/Dockerfile -t fast-note:${{ github.sha }} ./app
+          docker tag fast-note:${{ github.sha }} $ECR_REGISTRY/fast-note:${{ github.sha }}
+          docker tag fast-note:${{ github.sha }} $ECR_REGISTRY/fast-note:latest
+          docker push $ECR_REGISTRY/fast-note:${{ github.sha }}
+          docker push $ECR_REGISTRY/fast-note:latest
 ```
 
 ## 認証実装
 
 ### 認証アーキテクチャ
 
-**fast-memo** では、Keycloak をアイデンティティプロバイダー（IdP）として使用し、OIDC（OpenID Connect）の認可コードフローで認証を行います。
+**fast-note** では、Keycloak をアイデンティティプロバイダー（IdP）として使用し、OIDC（OpenID Connect）の認可コードフローで認証を行います。
 
 ```
 ┌─────────────┐         ┌─────────────┐         ┌─────────────┐
@@ -777,7 +777,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     KeycloakProvider({
       clientId: process.env.KEYCLOAK_CLIENT_ID!,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
-      issuer: process.env.KEYCLOAK_ISSUER, // https://keycloak.example.com/realms/fast-memo
+      issuer: process.env.KEYCLOAK_ISSUER, // https://keycloak.example.com/realms/fast-note
       authorization: {
         params: {
           scope: "openid email profile",
@@ -936,10 +936,10 @@ docker run -d \
 
 1. **Realm の作成**
    - Keycloak管理画面（http://localhost:8080）にアクセス
-   - 新しいRealmを作成: `fast-memo`
+   - 新しいRealmを作成: `fast-note`
 
 2. **Client の作成**
-   - Client ID: `fast-memo-web`
+   - Client ID: `fast-note-web`
    - Client Protocol: `openid-connect`
    - Access Type: `confidential`
    - Valid Redirect URIs: `http://localhost:3000/api/auth/callback/keycloak`

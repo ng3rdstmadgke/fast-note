@@ -150,7 +150,7 @@ docker logs -f ${CONTAINER_NAME}
 ### 管理画面へのアクセス
 
 - ポートフォワーディング 
-  - `fast-memo-sample-rabbitmq:15672`
+  - `fast-note-sample-rabbitmq:15672`
 - 管理画面: http://localhost:15672
   - user: `app`
   - password: `pass1234`

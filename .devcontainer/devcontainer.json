@@ -7,11 +7,11 @@
    * プロパティ: https://containers.dev/implementors/json_reference/#general-properties
    */
   // UIに表示するdevcontainerの名前
-  "name": "fast-memo",
+  "name": "fast-note",
 
    // コンテナの環境変数設定
   "containerEnv": {
-      "PROJECT_NAME": "fast-memo",
+      "PROJECT_NAME": "fast-note",
       // devcontainerのID
       "DEVCONTAINER_ID": "${devcontainerId}",
       // ホスト側のプロジェクトディレクトリ
@@ -21,7 +21,7 @@
       // ホスト側のユーザー名
       "HOST_USER": "${localEnv:USER}",
       // devcontainerが所属するネットワーク名
-      "DOCKER_NETWORK": "br-fast-memo-${localEnv:USER}"
+      "DOCKER_NETWORK": "br-fast-note-${localEnv:USER}"
   },
 
   "forwardPorts": [
@@ -31,9 +31,9 @@
   "mounts": [
       "source=${localEnv:HOME}/.ssh/,target=/home/vscode/.ssh/,type=bind,consistency=cached",
       "source=${localEnv:HOME}/.aws/,target=/home/vscode/.aws/,type=bind,consistency=cached",
-      "source=${localEnv:HOME}/.fast-memo/.kube/,target=/home/vscode/.kube/,type=bind,consistency=cached",
-      "source=${localEnv:HOME}/.fast-memo/.config/helm/,target=/home/vscode/.config/helm/,type=bind,consistency=cached",
-      "source=${localEnv:HOME}/.fast-memo/.claude/,target=/home/vscode/.claude/,type=bind,consistency=cached"
+      "source=${localEnv:HOME}/.fast-note/.kube/,target=/home/vscode/.kube/,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.fast-note/.config/helm/,target=/home/vscode/.config/helm/,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.fast-note/.claude/,target=/home/vscode/.claude/,type=bind,consistency=cached"
   ],
 
   // devcontainerに追加する機能の定義
@@ -56,7 +56,7 @@
 
   // devcontainer 起動時の docker run のオプション
   "runArgs": [
-    "--network=br-fast-memo-${localEnv:USER}"
+    "--network=br-fast-note-${localEnv:USER}"
   ],
 
 

@@ -330,7 +330,7 @@ pnpm install
 3. **PostgreSQL の起動**
 
 ```bash
-cd /workspaces/fast-memo
+cd /workspaces/fast-note
 ./bin/postgresql.sh
 ```
 

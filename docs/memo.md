@@ -80,7 +80,7 @@ npx prisma init --datasource-provider postgresql
 
 
 ```bash
-DATABASE_URL="postgresql://app:root1234@fast-memo-sample-postgresql:5432/sample?schema=public"
+DATABASE_URL="postgresql://app:root1234@fast-note-sample-postgresql:5432/sample?schema=public"
 ```
 
 `app/prisma.config.ts` を編集して環境変数を読み込みます。
