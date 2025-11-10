@@ -53,6 +53,7 @@ model Note {
 
   // リレーション
   user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // 多対多のリレーション: https://www.prisma.io/docs/orm/prisma-schema/data-model/relations/many-to-many-relations
   noteTags NoteTag[]
 
   @@index([userId])
