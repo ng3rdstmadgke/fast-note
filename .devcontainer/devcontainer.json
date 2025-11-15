@@ -25,15 +25,15 @@
   },
 
   "forwardPorts": [
-    "sample-app-${localEnv:USER}:8000"
   ],
 
   "mounts": [
       "source=${localEnv:HOME}/.ssh/,target=/home/vscode/.ssh/,type=bind,consistency=cached",
       "source=${localEnv:HOME}/.aws/,target=/home/vscode/.aws/,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.claude/,target=/home/vscode/.claude/,type=bind,consistency=cached",
+      "source=${localEnv:HOME}/.claude.json,target=/home/vscode/.claude.json,type=bind,consistency=cached",
       "source=${localEnv:HOME}/.fast-note/.kube/,target=/home/vscode/.kube/,type=bind,consistency=cached",
-      "source=${localEnv:HOME}/.fast-note/.config/helm/,target=/home/vscode/.config/helm/,type=bind,consistency=cached",
-      "source=${localEnv:HOME}/.fast-note/.claude/,target=/home/vscode/.claude/,type=bind,consistency=cached"
+      "source=${localEnv:HOME}/.fast-note/.config/helm/,target=/home/vscode/.config/helm/,type=bind,consistency=cached"
   ],
 
   // devcontainerに追加する機能の定義
@@ -42,7 +42,9 @@
     // docker outside of dockerを利用するための設定: https://github.com/devcontainers/features/tree/main/src/docker-outside-of-docker
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
     // k9s: https://github.com/rio/features
-    "ghcr.io/rio/features/k9s:1": {}
+    "ghcr.io/rio/features/k9s:1": {},
+    // GitHub CLI: https://github.com/cli/cli
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
 
