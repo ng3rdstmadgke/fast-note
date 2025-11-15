@@ -102,6 +102,9 @@ pnpm prisma migrate dev --name init --create-only
 
 # マイグレーションの適用
 pnpm prisma migrate deploy
+
+# マイグレーションのリセット
+pnpm prisma migrate reset
 ```
 
 # DBのseedデータ投入
