@@ -271,3 +271,76 @@ main()
 ```bash
 pnpm seed
 ```
+
+
+# Debounce導入
+
+```bash
+pnpm i use-debounce
+```
+
+
+
+# Prisma のクエリメモ
+
+### 多対多の関連付けをすべて切断
+
+https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#disconnect-all-related-records
+
+```ts
+const result = await prisma.user.update({
+  where: {
+    id: 16,
+  },
+  data: {
+    posts: {
+      set: [], // すべての関連付けを切断
+    },
+  },
+  include: {
+    posts: true,
+  },
+})
+```
+
+### 多対多のの関連付けを接続または作成
+
+https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#connect-or-create-a-record
+
+
+```ts
+const result = await prisma.post.create({
+  data: {
+    title: 'How to make croissants',
+    author: {
+      connectOrCreate: {
+        where: { email: 'viola@prisma.io' }, // 関連付け対象の一意キー
+        create: { // 存在しない場合に作成するデータ
+          email: 'viola@prisma.io',
+          name: 'Viola',
+        },
+      },
+    },
+  },
+  include: {
+    author: true,
+  },
+})
+```
+
+### 関連付けのないレコードをフィルタリング
+
+https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#filter-on-absence-of--to-many-records
+
+```ts
+const usersWithZeroPosts = await prisma.user.findMany({
+  where: {
+    posts: { // 投稿が存在しないユーザーを取得
+      none: {},
+    },
+  },
+  include: {
+    posts: true,
+  },
+})
+```

@@ -33,6 +33,7 @@ async function main () {
       title: "fast-noteプロジェクト立ち上げ",
       content: "# プロジェクト立ち上げ",
       tags: {
+        // リレーションを接続または作成: https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#connect-or-create-a-record
         connectOrCreate: [
           {
             where: { userId_name: { userId: "keita.midorikawa", name: "作業記録" } },

@@ -5,6 +5,12 @@ import { NoteDetail } from "@/components/note/note-detail";
 import { useEffect, useState } from "react";
 import { ListNotesSchema, ListTagsSchema, GetNoteByIdSchema, getNoteById } from "@/actions/main";
 
+type Note = {
+  id: string;
+  title: string;
+  content: string;
+  tags: string[];
+}
 
 export default function NotesPage({notesFromDB, tagsFromDB}: {notesFromDB: ListNotesSchema[], tagsFromDB: ListTagsSchema[]}) {
   const [notes, setNotes] = useState(notesFromDB);
@@ -43,10 +49,15 @@ export default function NotesPage({notesFromDB, tagsFromDB}: {notesFromDB: ListN
   };
 
   // ノートの更新
-  const handleUpdateNote = (updatedNote: any) => {
-    setNotes(
-      notes.map((note) => (note.id === updatedNote.id ? updatedNote : note))
-    );
+  const handleUpdateNote = (note: Note ) => {
+    if (!selectedNoteDetail) return;
+    const updatedNote = {
+      ...selectedNoteDetail,
+      title: note.title ?? selectedNoteDetail.title,
+      // tags: tags ?? selectedNoteDetail.tags,
+      content: note.content ?? selectedNoteDetail.content,
+    };
+    setSelectedNoteDetail(updatedNote);
   };
 
   // ノートの削除
@@ -73,7 +84,6 @@ export default function NotesPage({notesFromDB, tagsFromDB}: {notesFromDB: ListN
         {/* Main Panel */}
         <NoteDetail
           note={selectedNoteDetail}
-          onUpdate={handleUpdateNote}
           onDelete={handleDeleteNote}
         />
       </div>
