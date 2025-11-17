@@ -36,7 +36,7 @@ export function Sidebar({
     const matchesSearch =
       searchQuery === "" ||
       note.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTag = selectedTag === "All" || note.tags.includes(selectedTag);
+    const matchesTag = selectedTag === "All" || note.tags.find(tag => tag.name === selectedTag);
     return matchesSearch && matchesTag;
   });
 
