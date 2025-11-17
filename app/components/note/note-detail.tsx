@@ -49,12 +49,15 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
   } else {
     return (
       <div className="flex-1 bg-white flex flex-col">
-        <div className="flex flex-col h-full p-6 space-y-3">
+        <div className="flex flex-col h-full p-6 space-y-4">
           {/* Title and Delete Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap w-16">
+              タイトル
+            </label>
             <Input
               type="text"
-              placeholder="タイトル"
+              placeholder="タイトルを入力..."
               className="flex-1 text-lg font-medium border-gray-200 focus:border-gray-300"
               value={title}
               onChange={
@@ -76,19 +79,24 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
           </div>
 
           {/* Tags */}
-          <Input
-            type="text"
-            placeholder="タグ (カンマ区切り)"
-            className="border-gray-200 focus:border-gray-300"
-            value={tags}
-            onChange={
-              (e) => {
-                setTags(e.target.value);
-                handleUpdate(e.target.value);
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap w-16">
+              タグ
+            </label>
+            <Input
+              type="text"
+              placeholder="タグをカンマ区切りで入力 (例: 仕事, アイデア)"
+              className="flex-1 border-gray-200 focus:border-gray-300"
+              value={tags}
+              onChange={
+                (e) => {
+                  setTags(e.target.value);
+                  handleUpdate(e.target.value);
+                }
               }
-            }
-            //onBlur={handleUpdate}
-          />
+              //onBlur={handleUpdate}
+            />
+          </div>
 
           {/* Content */}
           <Textarea
