@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fast-note
+  annotations:
+    # 本番環境用の設定
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-1:674582907715:certificate/1fe9b416-1ccf-42b6-b77f-3e187e56edb1
+    alb.ingress.kubernetes.io/security-groups: sg-04281baca92611c79
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS-1-2-2017-01
+    # WAF ACLの関連付け (オプション)
+    # alb.ingress.kubernetes.io/wafv2-acl-arn: <WAF_ACL_ARN>
+spec:
+  rules:
+    - host: fast-note.prd.baseport.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: fast-note
+                port:
+                  number: 80

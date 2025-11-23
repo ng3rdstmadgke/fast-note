@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fast-note-prod
+
+bases:
+  - ../../base
+
+namePrefix: prod-
+
+commonLabels:
+  environment: prod
+
+# レプリカ数を本番環境用に調整
+replicas:
+  - name: fast-note
+    count: 3
+
+# イメージタグを指定
+images:
+  - name: fast-note
+    newName: ghcr.io/<GITHUB_OWNER>/fast-note
+    newTag: latest
+
+# 本番環境用のパッチ
+patchesStrategicMerge:
+  - ingress-patch.yaml
+  - deployment-patch.yaml
+
+# ConfigMapの上書き
+configMapGenerator:
+  - name: fast-note-config
+    behavior: merge
+    literals:
+      - NODE_ENV=production

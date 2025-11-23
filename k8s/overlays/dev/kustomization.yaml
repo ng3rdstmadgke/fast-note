@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fast-note-dev
+
+bases:
+  - ../../base
+
+namePrefix: dev-
+
+commonLabels:
+  environment: dev
+
+# レプリカ数を開発環境用に調整
+replicas:
+  - name: fast-note
+    count: 1
+
+# イメージタグを指定
+images:
+  - name: fast-note
+    newName: ghcr.io/<GITHUB_OWNER>/fast-note
+    newTag: dev
+
+# 開発環境用のSecret参照設定
+patchesStrategicMerge:
+  - ingress-patch.yaml
+
+# ConfigMapの上書き
+configMapGenerator:
+  - name: fast-note-config
+    behavior: merge
+    literals:
+      - NODE_ENV=development

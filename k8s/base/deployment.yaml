@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fast-note
+  labels:
+    app: fast-note
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: fast-note
+  template:
+    metadata:
+      labels:
+        app: fast-note
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+      containers:
+        - name: fast-note
+          image: fast-note:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: fast-note-config
+            - secretRef:
+                name: fast-note-secrets
+          env:
+            # Database URL (Secretから値を参照)
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: database-url
+            # NextAuth.js URL
+            - name: NEXTAUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: nextauth-url
+            # NextAuth.js Secret
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: nextauth-secret
+            # Keycloak Client ID
+            - name: KEYCLOAK_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: keycloak-client-id
+            # Keycloak Client Secret
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: keycloak-client-secret
+            # Keycloak Issuer
+            - name: KEYCLOAK_ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: keycloak-issuer
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+      restartPolicy: Always

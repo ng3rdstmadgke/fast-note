@@ -1,0 +1,6 @@
+# 機密情報を含むファイルをgitから除外
+secret.yaml
+*.secret.yaml
+
+# Kustomize build output
+kustomization-output.yaml

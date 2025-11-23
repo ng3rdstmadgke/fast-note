@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - ingress.yaml
+
+configMapGenerator:
+  - name: fast-note-config
+    literals:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      - AUTH_TRUST_HOST=true
