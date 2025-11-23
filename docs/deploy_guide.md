@@ -25,9 +25,15 @@
 
 ### 2. 環境変数の設定
 
+`.devcontainer/.env`
+
 ```bash
-export GITHUB_OWNER="your-github-username"
-export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+GITHUB_OWNER=your-github-username
+GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+```
+
+```bash
+source ~/.bashrc
 ```
 
 ### 3. GHCRへのログイン
@@ -38,23 +44,34 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_OWNER --password-stdin
 
 ### 4. イメージのビルドとプッシュ
 
+
+#### ビルド
+
+```bash
+./bin/build-image.sh -t dev
+```
+
+起動確認
+
+```bash
+docker run --rm -ti \
+  --name fast-note-test \
+  --network $DOCKER_NETWORK \
+  --env-file $PROJECT_DIR/app/.env \
+  -e AUTH_TRUST_HOST=true \
+  -p 3000:3000 \
+  fast-note:latest
+```
+
+- `fast-note-test:3000` でポートフォワーディング
+- ブラウザで `http://localhost:3000` にアクセスして動作確認
+
+
 プロジェクトルートで以下のコマンドを実行：
 
 ```bash
-# 開発環境用（devタグ）
-./bin/push-image.sh -o $GITHUB_OWNER -t dev
-
 # 本番環境用（latestタグ）
-./bin/push-image.sh -o $GITHUB_OWNER -t latest
-
-# 特定バージョン（例: v1.0.0）
-./bin/push-image.sh -o $GITHUB_OWNER -t v1.0.0
-```
-
-**ビルドのみ実行する場合:**
-
-```bash
-./bin/build-image.sh -o $GITHUB_OWNER -t dev -b
+./bin/push-image.sh  -t latest
 ```
 
 ## Kubernetesマニフェストの設定

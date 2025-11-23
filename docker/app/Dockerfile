@@ -2,7 +2,7 @@
 FROM node:22-bookworm-slim AS base
 
 # pnpmをインストール
-RUN npm install -g pnpm@9
+RUN npm install -g pnpm@10
 
 # 依存関係のインストール用ステージ
 FROM base AS deps
@@ -25,6 +25,7 @@ WORKDIR /app
 # 依存関係をコピー
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
+COPY --from=deps /app/lib/generated/prisma ./lib/generated/prisma
 
 # ソースコードをコピー
 COPY . .
@@ -39,6 +40,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/lib/generated/prisma/libquery_engine-debian-openssl-1.1.x.so.node
 
 # セキュリティ: 非rootユーザーを作成
 RUN groupadd --system --gid 1001 nodejs && \
@@ -49,7 +51,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/lib/generated/prisma ./lib/generated/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # 非rootユーザーに切り替え
