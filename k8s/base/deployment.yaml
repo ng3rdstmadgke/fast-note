@@ -5,7 +5,7 @@ metadata:
   labels:
     app: fast-note
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: fast-note
@@ -16,6 +16,38 @@ spec:
     spec:
       imagePullSecrets:
         - name: ghcr-secret
+      initContainers:
+        - name: db-migration
+          image: fast-note:latest
+          imagePullPolicy: Always
+          command:
+            - sh
+            - -c
+            - |
+              set -eu
+              echo "Starting database migration..."
+              cd /app
+              # node_modules/.bin/prisma を直接実行
+              ./node_modules/.bin/prisma migrate deploy
+              echo "Migration completed successfully"
+          envFrom:
+            - configMapRef:
+                name: fast-note-config
+            - secretRef:
+                name: fast-note-secrets
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: fast-note-secrets
+                  key: database-url
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       containers:
         - name: fast-note
           image: fast-note:latest

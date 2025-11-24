@@ -624,14 +624,57 @@ Closes #123
    - ECR へプッシュ
    ▼
 4. 【手動 kubectl】（初期フェーズ）
-   kubectl apply -f k8s/
+   kubectl apply -k k8s/overlays/prod/
    ▼
-5. 【ArgoCD】（将来的に）
+5. EKS クラスタにデプロイ
+   - Init Container で自動的にマイグレーション実行
+   - マイグレーション成功後にアプリケーション起動
+   ▼
+6. 【ArgoCD】（将来的に）
    - Git リポジトリを監視
    - 自動デプロイメント
-   ▼
-6. EKS クラスタにデプロイ
 ```
+
+### データベースマイグレーション
+
+EKS上では、アプリケーション起動前に自動的にデータベースマイグレーションが実行されます。
+
+#### 仕組み
+
+- **Init Container方式**: 各PodのInit Containerで `pnpm prisma migrate deploy` を実行
+- **自動実行**: Deploymentの更新時に自動的にマイグレーションが実行される
+- **安全性**: マイグレーション失敗時はPodが起動しない
+
+#### マイグレーションの流れ
+
+```
+1. kubectl apply でDeploymentを更新
+   ▼
+2. 新しいPodが作成
+   ▼
+3. Init Container (db-migration) が起動
+   ▼
+4. Prisma Migrate 実行 (pnpm prisma migrate deploy)
+   ▼
+   成功 → メインコンテナ起動
+   失敗 → Pod起動失敗（自動リトライ）
+```
+
+#### マイグレーションの確認
+
+```bash
+# Init Containerのログを確認
+kubectl logs deployment/prod-fast-note -c db-migration -n fast-note-prod
+
+# マイグレーション状態の確認（デバッグPodで）
+kubectl run -it --rm debug \
+  --image=ghcr.io/ng3rdstmadgke/fast-note:latest \
+  --env="DATABASE_URL=$(kubectl get secret fast-note-secrets -n fast-note-prod -o jsonpath='{.data.database-url}' | base64 -d)" \
+  -n fast-note-prod \
+  -- pnpm prisma migrate status
+```
+
+詳細は [docs/database_migration.md](docs/database_migration.md) を参照してください。
 
 ### AWS リソース構成（予定）
 

@@ -48,7 +48,7 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_OWNER --password-stdin
 #### ビルド
 
 ```bash
-./bin/build-image.sh -t dev
+./bin/build-image.sh -t latest
 ```
 
 起動確認
@@ -80,10 +80,9 @@ docker run --rm -ti \
 
 環境ごとにSecretファイルを作成します。
 
-#### 開発環境
-
 ```bash
-cd k8s/overlays/dev
+STAGE=prod
+cd k8s/overlays/$STAGE
 cp secret.yaml.example secret.yaml
 vim secret.yaml
 ```
@@ -95,20 +94,20 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: fast-note-secrets
-  namespace: fast-note-dev
+  namespace: fast-note-prod
 type: Opaque
 stringData:
   # PostgreSQL接続情報
-  database-url: "postgresql://app:PASSWORD@fast-note-dev-postgres.xxxxx.ap-northeast-1.rds.amazonaws.com:5432/fastnote"
+  database-url: "postgresql://DB_USER:DB_PASSWORD@$DB_HOST:$DB_PORT/fastnote"
 
   # NextAuth.js設定
-  nextauth-url: "https://dev.fast-note.example.com"
+  nextauth-url: "https://fast-note.prd.baseport.net"
   nextauth-secret: "GENERATE_WITH_openssl_rand_base64_32"
 
   # Keycloak設定
-  keycloak-client-id: "fast-note-web-dev"
+  keycloak-client-id: "fast-note-web-prod"
   keycloak-client-secret: "YOUR_KEYCLOAK_CLIENT_SECRET"
-  keycloak-issuer: "https://keycloak.example.com/realms/fast-note-dev"
+  keycloak-issuer: "https://keycloak.prd.baseport.net/realms/REALM_NAME"
 ```
 
 **NextAuth Secretの生成:**
@@ -117,28 +116,28 @@ stringData:
 openssl rand -base64 32
 ```
 
-#### 本番環境
+**PostgreSQL接続情報の取得**
 
 ```bash
-cd k8s/overlays/prod
-cp secret.yaml.example secret.yaml
-vim secret.yaml
+DB_SECRET=$(aws secretsmanager get-secret-value --secret-id /baseport/prd/postgresql-common | jq -r ".SecretString")
+DB_USER=$(echo $DB_SECRET | jq -r ".db_user")
+DB_PASSWORD=$(echo $DB_SECRET | jq -r ".db_password")
+DB_HOST=$(echo $DB_SECRET | jq -r ".db_host")
+DB_PORT=$(echo $DB_SECRET | jq -r ".db_port")
+DB_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/fastnote"
+
+echo $DB_URL
+
+# DBの作成
+PGPASSWORD=$DB_PASSWORD psql -U $DB_USER -h $DB_HOST -p $DB_PORT -d baseport
+> CREATE DATABASE fastnote;
 ```
 
 ### 2. Kustomization.yamlの編集
 
 各環境の `kustomization.yaml` を編集してプレースホルダーを置き換えます。
 
-#### 開発環境（k8s/overlays/dev/kustomization.yaml）
-
-```yaml
-images:
-  - name: fast-note
-    newName: ghcr.io/your-username/fast-note
-    newTag: dev
-```
-
-#### 本番環境（k8s/overlays/prod/kustomization.yaml）
+`k8s/overlays/$STAGE/kustomization.yaml`
 
 ```yaml
 images:
@@ -147,66 +146,12 @@ images:
     newTag: latest
 ```
 
-### 3. Ingress Patchの編集
-
-各環境の `ingress-patch.yaml` を編集します。
-
-#### 開発環境（k8s/overlays/dev/ingress-patch.yaml）
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: fast-note
-  annotations:
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-1:123456789012:certificate/xxxxx
-spec:
-  rules:
-    - host: dev.fast-note.example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: fast-note
-                port:
-                  number: 80
-```
-
-#### 本番環境（k8s/overlays/prod/ingress-patch.yaml）
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: fast-note
-  annotations:
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-1:123456789012:certificate/yyyyy
-spec:
-  rules:
-    - host: fast-note.example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: fast-note
-                port:
-                  number: 80
-```
-
 ### 4. マニフェストのビルド確認
 
 デプロイ前に生成されるマニフェストを確認します：
 
 ```bash
-# 開発環境
-kubectl kustomize k8s/overlays/dev
-
-# 本番環境
-kubectl kustomize k8s/overlays/prod
+kubectl kustomize k8s/overlays/$STAGE
 ```
 
 ## デプロイメント
@@ -214,43 +159,27 @@ kubectl kustomize k8s/overlays/prod
 ### 1. Namespaceの作成
 
 ```bash
-# 開発環境
-kubectl create namespace fast-note-dev
-
-# 本番環境
-kubectl create namespace fast-note-prod
+kubectl create namespace fast-note-$STAGE
 ```
 
 ### 2. アプリケーションSecretのデプロイ
 
 ```bash
-# 開発環境
-kubectl apply -f k8s/overlays/dev/secret.yaml
-
-# 本番環境
-kubectl apply -f k8s/overlays/prod/secret.yaml
+kubectl apply -f k8s/overlays/${STAGE}/secret.yaml
 ```
 
 ### 3. GHCR Image Pull Secretの作成
 
-プライベートリポジトリの場合のみ必要です。パブリックイメージの場合はスキップできます。
+プライベートリポジトリの場合のみ必要
 
 ```bash
-# 開発環境
-kubectl create secret docker-registry ghcr-secret \
-  --docker-server=ghcr.io \
-  --docker-username=$GITHUB_OWNER \
-  --docker-password=$GITHUB_TOKEN \
-  --docker-email=your-email@example.com \
-  -n fast-note-dev
-
 # 本番環境
 kubectl create secret docker-registry ghcr-secret \
   --docker-server=ghcr.io \
   --docker-username=$GITHUB_OWNER \
   --docker-password=$GITHUB_TOKEN \
-  --docker-email=your-email@example.com \
-  -n fast-note-prod
+  --docker-email=$GITHUB_EMAIL \
+  -n fast-note-$STAGE
 ```
 
 ### 4. アプリケーションのデプロイ
@@ -258,32 +187,9 @@ kubectl create secret docker-registry ghcr-secret \
 Kustomizeを使用してデプロイします：
 
 ```bash
-# 開発環境
-kubectl apply -k k8s/overlays/dev
-
-# 本番環境
 kubectl apply -k k8s/overlays/prod
 ```
 
-### 5. デプロイ状況の確認
-
-```bash
-# Podの状態確認
-kubectl get pods -n fast-note-dev
-kubectl get pods -n fast-note-prod
-
-# Serviceの確認
-kubectl get svc -n fast-note-dev
-kubectl get svc -n fast-note-prod
-
-# Ingressの確認（ALBのDNS名を取得）
-kubectl get ingress -n fast-note-dev
-kubectl get ingress -n fast-note-prod
-
-# Podのログ確認
-kubectl logs -f -n fast-note-dev deployment/dev-fast-note
-kubectl logs -f -n fast-note-prod deployment/prod-fast-note
-```
 
 ## 動作確認
 
@@ -293,7 +199,7 @@ Port Forwardでローカルから確認：
 
 ```bash
 # Port Forward
-kubectl port-forward -n fast-note-dev svc/dev-fast-note 3000:80
+kubectl port-forward -n fast-note-$STAGE svc/dev-fast-note 3000:80
 
 # 別のターミナルで
 curl http://localhost:3000/api/health
@@ -309,20 +215,6 @@ curl http://localhost:3000/api/health
 }
 ```
 
-### 2. ALB DNS名の取得
-
-```bash
-kubectl get ingress -n fast-note-prod -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
-```
-
-### 3. DNSの設定
-
-Route 53でCNAMEレコードを作成：
-
-- **Name**: `fast-note.example.com` (本番) / `dev.fast-note.example.com` (開発)
-- **Type**: CNAME
-- **Value**: ALBのDNS名
-
 ### 4. ブラウザでアクセス
 
 ```
@@ -331,46 +223,6 @@ https://fast-note.example.com
 ```
 
 ## 運用
-
-### イメージの更新
-
-#### 1. 新しいイメージをビルド＆プッシュ
-
-```bash
-# 新しいバージョンをビルド
-./bin/push-image.sh -o $GITHUB_OWNER -t v1.1.0
-```
-
-#### 2. Kustomization.yamlのイメージタグを更新
-
-```yaml
-# k8s/overlays/prod/kustomization.yaml
-images:
-  - name: fast-note
-    newName: ghcr.io/your-username/fast-note
-    newTag: v1.1.0  # 更新
-```
-
-#### 3. 再デプロイ
-
-```bash
-kubectl apply -k k8s/overlays/prod
-
-# ロールアウト状況の確認
-kubectl rollout status deployment/prod-fast-note -n fast-note-prod
-```
-
-### 設定の更新
-
-ConfigMapやSecretを更新した場合、Podを再起動します：
-
-```bash
-# Secret更新後
-kubectl apply -f k8s/overlays/prod/secret.yaml
-
-# Podの再起動
-kubectl rollout restart deployment/prod-fast-note -n fast-note-prod
-```
 
 ### ロールバック
 
@@ -385,69 +237,6 @@ kubectl rollout undo deployment/prod-fast-note -n fast-note-prod
 
 # 特定のリビジョンにロールバック
 kubectl rollout undo deployment/prod-fast-note -n fast-note-prod --to-revision=2
-```
-
-### スケーリング
-
-#### 手動スケーリング
-
-```bash
-# レプリカ数を変更
-kubectl scale deployment/prod-fast-note --replicas=5 -n fast-note-prod
-```
-
-#### Horizontal Pod Autoscaler（HPA）
-
-HPA用のマニフェストを追加する場合：
-
-```yaml
-# k8s/base/hpa.yaml
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: fast-note
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: fast-note
-  minReplicas: 2
-  maxReplicas: 10
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
-```
-
-適用：
-
-```bash
-kubectl apply -f k8s/base/hpa.yaml -n fast-note-prod
-```
-
-### ログの確認
-
-```bash
-# 特定のPodのログ
-kubectl logs <pod-name> -n fast-note-prod
-
-# リアルタイムでログを追跡
-kubectl logs -f deployment/prod-fast-note -n fast-note-prod
-
-# 過去のログ（前回のコンテナ）
-kubectl logs <pod-name> -n fast-note-prod --previous
-
-# すべてのPodのログ
-kubectl logs -l app=fast-note -n fast-note-prod
 ```
 
 ## セキュリティのベストプラクティス

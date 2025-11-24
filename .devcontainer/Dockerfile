@@ -7,6 +7,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt install -y \
       sudo \
       locales \
+      netcat-openbsd \
       net-tools \
       iputils-ping \
       dnsutils \

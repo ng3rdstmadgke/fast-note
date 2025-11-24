@@ -3,29 +3,32 @@ kind: Kustomization
 
 namespace: fast-note-prod
 
-bases:
+resources:
   - ../../base
 
 namePrefix: prod-
 
-commonLabels:
-  environment: prod
+labels:
+  - includeSelectors: true
+    pairs:
+      environment: prod
 
 # レプリカ数を本番環境用に調整
 replicas:
   - name: fast-note
-    count: 3
+    count: 1
 
 # イメージタグを指定
 images:
+  # https://github.com/ng3rdstmadgke?tab=packages
   - name: fast-note
-    newName: ghcr.io/<GITHUB_OWNER>/fast-note
+    newName: ghcr.io/ng3rdstmadgke/fast-note
     newTag: latest
 
 # 本番環境用のパッチ
-patchesStrategicMerge:
-  - ingress-patch.yaml
-  - deployment-patch.yaml
+patches:
+  - path: ingress-patch.yaml
+  - path: deployment-patch.yaml
 
 # ConfigMapの上書き
 configMapGenerator:
