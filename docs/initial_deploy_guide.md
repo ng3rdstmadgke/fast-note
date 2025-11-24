@@ -30,6 +30,7 @@
 ```bash
 GITHUB_OWNER=your-github-username
 GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+GITHUB_EMAIL=your-github-email
 ```
 
 ```bash
@@ -199,75 +200,13 @@ Port Forwardでローカルから確認：
 
 ```bash
 # Port Forward
-kubectl port-forward -n fast-note-$STAGE svc/dev-fast-note 3000:80
+kubectl port-forward -n fast-note-$STAGE svc/$STAGE-fast-note 3000:80
 
 # 別のターミナルで
 curl http://localhost:3000/api/health
-```
-
-期待されるレスポンス：
-
-```json
-{
-  "status": "ok",
-  "timestamp": "2025-11-23T12:34:56.789Z",
-  "database": "connected"
-}
+# {"status":"ok","timestamp":"2025-11-24T15:02:02.041Z","database":"connected"}
 ```
 
 ### 4. ブラウザでアクセス
 
-```
-https://dev.fast-note.example.com
-https://fast-note.example.com
-```
-
-## 運用
-
-### ロールバック
-
-デプロイに問題がある場合、前のバージョンにロールバックできます：
-
-```bash
-# ロールバック履歴の確認
-kubectl rollout history deployment/prod-fast-note -n fast-note-prod
-
-# 直前のバージョンにロールバック
-kubectl rollout undo deployment/prod-fast-note -n fast-note-prod
-
-# 特定のリビジョンにロールバック
-kubectl rollout undo deployment/prod-fast-note -n fast-note-prod --to-revision=2
-```
-
-## セキュリティのベストプラクティス
-
-1. **Secretの管理**
-   - Secretファイルは絶対にGitにコミットしない（`.gitignore`に追加済み）
-   - 本番環境では AWS Secrets Manager や External Secrets Operator の使用を推奨
-
-2. **ネットワークポリシー**
-   - 必要に応じてNetworkPolicyを設定し、Pod間通信を制限
-
-3. **RBAC**
-   - 最小権限の原則に従ってServiceAccountとRoleを設定
-
-4. **Pod Security Standards**
-   - Pod Security Admission を使用してセキュリティポリシーを強制
-
-5. **イメージの脆弱性スキャン**
-   - 定期的にイメージの脆弱性をスキャン
-   - Trivy や Snyk などのツールを使用
-
-## 参考リンク
-
-### 公式ドキュメント
-
-- [Amazon EKS Documentation](https://docs.aws.amazon.com/eks/)
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [Kustomize Documentation](https://kustomize.io/)
-- [GitHub Container Registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry)
-
-### ベストプラクティス
-
-- [EKS Best Practices Guide](https://aws.github.io/aws-eks-best-practices/)
-- [Kubernetes Production Best Practices](https://kubernetes.io/docs/setup/best-practices/)
+- https://fast-note.prd.baseport.net/

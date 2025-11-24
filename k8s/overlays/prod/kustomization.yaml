@@ -6,6 +6,7 @@ namespace: fast-note-prod
 resources:
   - ../../base
 
+# すべてのリソースにprod-プレフィックスを追加
 namePrefix: prod-
 
 labels:
