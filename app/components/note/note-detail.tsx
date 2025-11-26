@@ -19,13 +19,31 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
   const [title, setTitle] = useState<string>("");
   const [tags, setTags] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [previousNoteId, setPreviousNoteId] = useState<string | null>(null);
+
+  // 即座に保存する関数（デバウンスなし）
+  const saveImmediately = async (noteId: string, noteTitle: string, noteTags: string, noteContent: string) => {
+    const result = await updateNote(noteId, noteTitle, noteTags, noteContent);
+    if (result.success) {
+      await refreshSidebar();
+    }
+  };
 
   // noteが変わったときにローカルステートを更新
   useEffect(() => {
-    if (!note) return;
+    // 前のノートがあれば保存
+    if (previousNoteId && previousNoteId !== note?.id) {
+      saveImmediately(previousNoteId, title, tags, content);
+    }
+
+    if (!note) {
+      setPreviousNoteId(null);
+      return;
+    }
     setTitle(note.title);
     setTags(note.tags.map(tag => tag.name).join(", "));
     setContent(note.content);
+    setPreviousNoteId(note.id);
   }, [note]);
 
   const handleUpdate = useDebouncedCallback(async () => {
