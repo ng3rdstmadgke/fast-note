@@ -104,37 +104,44 @@ async function deleteOrphanTags(userId: string): Promise<void> {
   })
 }
 
-export async function updateNote(noteId: string, title: string, tags: string, content: string): Promise<void> {
-  const user = await getOrCreateUser();
+export async function updateNote(noteId: string, title: string, tags: string, content: string): Promise<{success: boolean, error?: string}> {
+  try {
+    const user = await getOrCreateUser();
 
-  const tagList = tags.split(",").map(tag => tag.trim()).filter(tag => tag !== "");
-  await prisma.note.update({
-    where: { id: noteId, userId: user.id },
-    data: {
-      title,
-      content,
-      tags: {
-        // 既存の関連付けを一旦クリア: https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#disconnect-all-related-records
-        set: [],
-        // リレーションを接続または作成: https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#connect-or-create-a-record
-        connectOrCreate: tagList.map(tagName => ({
-          where: {
-            userId_name: {
+    const tagList = tags.split(",").map(tag => tag.trim()).filter(tag => tag !== "");
+    await prisma.note.update({
+      where: { id: noteId, userId: user.id },
+      data: {
+        title,
+        content,
+        tags: {
+          // 既存の関連付けを一旦クリア: https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#disconnect-all-related-records
+          set: [],
+          // リレーションを接続または作成: https://www.prisma.io/docs/orm/prisma-client/queries/relation-queries#connect-or-create-a-record
+          connectOrCreate: tagList.map(tagName => ({
+            where: {
+              userId_name: {
+                userId: user.id,
+                name: tagName
+              }
+            },
+            create: {
               userId: user.id,
               name: tagName
-            }
-          },
-          create: {
-            userId: user.id,
-            name: tagName
-          },
-        })),
+            },
+          })),
+        },
       },
-    },
-  })
+    })
 
-  // 孤立したタグの削除
-  await deleteOrphanTags(user.id);
+    // 孤立したタグの削除
+    await deleteOrphanTags(user.id);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update note:', error);
+    return { success: false, error: 'ノートの保存に失敗しました' };
+  }
 }
 
 export async function deleteNote(noteId: string): Promise<void> {

@@ -7,6 +7,7 @@ import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { updateNote, GetNoteByIdSchema } from "@/actions/main";
 import { useDebouncedCallback } from "use-debounce";
+import { toast } from "sonner";
 
 interface NoteDetailProps {
   note: GetNoteByIdSchema | null;
@@ -27,9 +28,16 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
     setContent(note.content);
   }, [note]);
 
-  const handleUpdate = useDebouncedCallback((value) => {
+  const handleUpdate = useDebouncedCallback(async () => {
     if (!note) return;
-    updateNote(note.id, title, tags, content);
+    const result = await updateNote(note.id, title, tags, content);
+
+    if (result.success) {
+      toast.success("保存しました");
+    } else {
+      toast.error(result.error || "保存に失敗しました");
+    }
+
     // サイドバーの情報も更新
     refreshSidebar();
   }, 1000);
@@ -63,10 +71,9 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
               onChange={
                 (e) => {
                   setTitle(e.target.value);
-                  handleUpdate(e.target.value);
+                  handleUpdate();
                 }
               }
-              //onBlur={handleUpdate}
             />
             <Button
               variant="ghost"
@@ -91,10 +98,9 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
               onChange={
                 (e) => {
                   setTags(e.target.value);
-                  handleUpdate(e.target.value);
+                  handleUpdate();
                 }
               }
-              //onBlur={handleUpdate}
             />
           </div>
 
@@ -106,10 +112,9 @@ export function NoteDetail({ note, refreshSidebar, onDelete }: NoteDetailProps) 
             onChange={
               (e) => {
                 setContent(e.target.value);
-                handleUpdate(e.target.value);
+                handleUpdate();
               }
             }
-            //onBlur={handleUpdate}
           />
 
           {/* Created Date */}
