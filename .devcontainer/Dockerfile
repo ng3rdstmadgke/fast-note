@@ -98,7 +98,15 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - && \
     npm install -g npm && \
     node -v
 
-RUN curl -fsSL https://claude.ai/install.sh | bash
-
 # pnpm インストール
 RUN npm install -g pnpm
+
+# Gemini CLI インストール
+# https://github.com/google-gemini/gemini-cli
+RUN npm install -g @google/gemini-cli
+
+USER vscode
+
+# Claude Code CLI インストール
+# https://code.claude.com/docs/en/setup#standard-installation
+RUN curl -fsSL https://claude.ai/install.sh | bash
