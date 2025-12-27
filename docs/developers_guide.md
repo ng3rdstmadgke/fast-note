@@ -24,10 +24,22 @@ cp .devcontainer/.env.example .devcontainer/.env
 - `AUTH_KEYCLOAK_ID` `AUTH_KEYCLOAK_SECRET` `AUTH_KEYCLOAK_ISSUER` を設定
 
 
-マイグレーション
+マイグレーションファイルの生成
 
 ```bash
-(cd app && pnpm prisma migrate deploy)
+pnpm prisma migrate dev --name init --create-only
+```
+
+マイグレーションの実行
+
+```bash
+pnpm prisma migrate dev
+```
+
+prisma clientの作成
+
+```bash
+pnpm prisma generate
 ```
 
 初期データ投入

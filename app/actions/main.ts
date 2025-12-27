@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { Note, Tag, Prisma } from '@/lib/generated/prisma/client';
 import { auth } from '@/auth';
 import { get } from 'http';
