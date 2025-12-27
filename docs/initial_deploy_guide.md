@@ -188,7 +188,7 @@ kubectl create secret docker-registry ghcr-secret \
 Kustomizeを使用してデプロイします：
 
 ```bash
-kubectl apply -k k8s/overlays/prod
+kubectl apply -k k8s/overlays/$STAGE
 ```
 
 
