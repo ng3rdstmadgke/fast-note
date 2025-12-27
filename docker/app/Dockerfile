@@ -53,10 +53,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/lib/generated/prisma ./lib/generated/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-# Prisma CLIをマイグレーション用にコピー（pnpmの構造に対応）
-COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder /app/node_modules/.pnpm ./node_modules/.pnpm
+COPY --from=builder /app/node_modules ./node_modules
 
 # 非rootユーザーに切り替え
 USER nextjs

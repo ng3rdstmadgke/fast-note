@@ -1,6 +1,6 @@
 // https://www.prisma.io/docs/orm/reference/prisma-client-reference#prismaclient
-import { PrismaClient, Prisma } from '@/lib/generated/prisma/client';
-import { PrismaPg, } from '@prisma/adapter-pg';
+import { PrismaClient } from '@/lib/generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 // ワーカーごとに一つの接続を使い回す
 const globalForPrisma = global as unknown as {

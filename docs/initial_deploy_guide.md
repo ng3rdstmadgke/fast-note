@@ -72,7 +72,7 @@ docker run --rm -ti \
 
 ```bash
 # 本番環境用（latestタグ）
-./bin/push-image.sh  -t latest
+./bin/push-image.sh -t v1.0.1
 ```
 
 ## Kubernetesマニフェストの設定
@@ -144,7 +144,7 @@ PGPASSWORD=$DB_PASSWORD psql -U $DB_USER -h $DB_HOST -p $DB_PORT -d baseport
 images:
   - name: fast-note
     newName: ghcr.io/your-username/fast-note
-    newTag: latest
+    newTag: v1.0.1
 ```
 
 ### 4. マニフェストのビルド確認

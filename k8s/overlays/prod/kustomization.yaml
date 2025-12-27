@@ -24,7 +24,7 @@ images:
   # https://github.com/ng3rdstmadgke?tab=packages
   - name: fast-note
     newName: ghcr.io/ng3rdstmadgke/fast-note
-    newTag: v1.0.3
+    newTag: v1.0.5
 
 # 本番環境用のパッチ
 patches:

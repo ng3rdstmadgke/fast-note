@@ -35,12 +35,6 @@ spec:
                 name: fast-note-config
             - secretRef:
                 name: fast-note-secrets
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: database-url
           resources:
             requests:
               cpu: 100m
@@ -62,69 +56,8 @@ spec:
             - secretRef:
                 name: fast-note-secrets
           env:
-            # Database URL (Secretから値を参照)
-            - name: DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: database-url
-            # NextAuth.js URL
-            # Auth.js (NextAuth.js v5) 設定
-            - name: AUTH_URL
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: nextauth-url
-            - name: AUTH_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: nextauth-secret
             - name: AUTH_TRUST_HOST
               value: "true"
-            # 後方互換性のため旧環境変数名も設定
-            - name: NEXTAUTH_URL
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: nextauth-url
-            - name: NEXTAUTH_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: nextauth-secret
-            # Auth.js Keycloak Provider 設定
-            - name: AUTH_KEYCLOAK_ID
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: keycloak-client-id
-            - name: AUTH_KEYCLOAK_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: keycloak-client-secret
-            - name: AUTH_KEYCLOAK_ISSUER
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: keycloak-issuer
-            # 後方互換性のため旧環境変数名も設定
-            - name: KEYCLOAK_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: keycloak-client-id
-            - name: KEYCLOAK_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: keycloak-client-secret
-            - name: KEYCLOAK_ISSUER
-              valueFrom:
-                secretKeyRef:
-                  name: fast-note-secrets
-                  key: keycloak-issuer
           resources:
             requests:
               cpu: 100m
